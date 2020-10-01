@@ -1,0 +1,31 @@
+{
+  "manifest_version": 2,
+  "name": "nanotator",
+  "version": "1.0",
+
+  "description": "Annotation assistant",
+
+  "permissions": [
+    "activeTab",
+    "storage"
+  ],
+
+  
+  "browser_action": {
+    "default_icon": "popup/fog.png",
+    "theme_icons": [{
+        "light": "popup/fog.png",
+        "dark": "popup/fog.png",
+        "size": 32
+    }],
+    "default_title": "nanotator",
+    "default_popup": "popup/popup.html"
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["*://*.wikipedia.org/*"],
+      "css": ["annotator.min.css"]
+    }
+  ]
+}
