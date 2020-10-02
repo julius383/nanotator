@@ -1,6 +1,3 @@
-
-let ann = new Annotator(document.body);
-console.log("Annotator instances", Annotator._instances);
 Annotator.Plugin.CustomStore = (function () {
   function CustomStore(element, options) {
     this.element = element;
@@ -18,16 +15,17 @@ Annotator.Plugin.CustomStore = (function () {
     console.log(`Storing annotation in ${key}`);
     console.log(annotation);
     current.then((obj) => {
-      console.log("Current is");
       console.log(obj);
-      let vals = obj[key];
-      console.log(vals);
-      if ($.isArray(vals)) {
-        vals.push(annotation);
+      let anns, enabled;
+      if (obj[key] === undefined) {
+        anns = [annotation];
+        enabled = false;
       } else {
-        vals = [annotation];
+        anns = obj[key]?.annotations || []
+        anns.push(annotation);
+        enabled = obj[key].enabled;
       }
-      browser.storage.local.set({ [key] : vals }).then(() => {
+      browser.storage.local.set({ [key] : {annotations: anns, enabled: enabled } }).then(() => {
         console.log("Stored new annotation");
       }, onError);
     }, onError);
@@ -41,12 +39,10 @@ Annotator.Plugin.CustomStore = (function () {
     // annotations are specific to a site so use url as key
     let annkey = window.location.toString();
     let existingAnnotations = browser.storage.local.get(annkey);
-    let annotations;
     existingAnnotations.then((results) => {
-      console.log("Initializing annotations");
-      console.log(results[annkey]);
-      console.log(results);
-      this.annotator.loadAnnotations(results[annkey]);
+      console.log(`Initializing annotations ${annkey}`);
+      console.log(browser.storage.local);
+      this.annotator.loadAnnotations(results[annkey] !== undefined ? results[annkey].annotations : []);
     });
     // console.log(this);
     console.log("Initialized with annotator: ", this.annotator);
@@ -57,14 +53,17 @@ Annotator.Plugin.CustomStore = (function () {
       },
       onError
     );
-  };
+  }
 
   return CustomStore;
 })();
 
-ann.addPlugin("Filter");
-ann.addPlugin("Tags");
-ann.addPlugin("CustomStore");
+function initializeAnnotator() {
+  let ann = new Annotator(document.body);
+  console.log("Annotator instances", Annotator._instances);
+  ann.addPlugin("Filter");
+  ann.addPlugin("Tags");
+  ann.addPlugin("CustomStore");
+}
 
-// ann.setupPlugins();
-// console.log(ann);
+initializeAnnotator();
